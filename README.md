@@ -1,2 +1,19 @@
 # encoding-checker
-Powershell script to detect no UTF-8 files
+A Windows PowerShell script to detect no UTF-8 files.
+
+Fully compatible with CI/CD pipelines on any orchestrator with Windows PowerShell tasks avaiable.
+
+
+## Parameters
+
+* -path: path to scan. Mandatory.
+* -filetypes: If present, determines the file types to check (by extension).
+* -showall: If present, shows the full list of scanned files.
+
+## Usage examples
+
+`.\encoding-checker.ps1 -path 'E:\Development\encoding-checker\test files\'`
+
+`.\encoding-checker.ps1 -path 'E:\Development\encoding-checker\test files\' -showall`
+
+`.\encoding-checker.ps1 -path 'E:\Desarrollo\encoding-checker\test files\' -filetypes txt,css,html`
