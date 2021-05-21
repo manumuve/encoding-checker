@@ -38,8 +38,9 @@ function Get-file-looks-utf8-with-BOM($file) {
   return ($bom[0] -eq 0xef -and $bom[1] -eq 0xbb -and $bom[2] -eq 0xbf)
 }
 
+Write-Host "Checking file encodings in:" $path "`r`n"
+
 function Get-encodings($folder) {
-  Write-Host "Checking file encodings in:" $path "`r`n"
   $folder.GetFiles() | ForEach-Object {
     if (!$definedfiletypes -or $_.Fullname -match $filetypesregex) {
       if (Get-file-looks-binary($_)) {
