@@ -18,11 +18,12 @@ $folder = Get-Item $path
 
 ## First, check if the file is binary. That is, if the first
 ## 5 lines contain any non-printable characters.
+## Empty files are assumed as binary, just as does UNIX file command.
 function Get-file-looks-binary($file) {
-  $nonPrintable = [char[]] (0..8 + 10..31 + 127 + 129 + 141 + 143 + 144 + 157)
+   $nonPrintable = [char[]] (0..8 + 10..31 + 127 + 129 + 141 + 143 + 144 + 157)
   $lines = Get-Content $file.Fullname -ErrorAction Ignore -TotalCount 5
   $result = @($lines | Where-Object { $_.IndexOfAny($nonPrintable) -ge 0 })
-  return ($result.Count -gt 0)
+  return ($result.Count -gt 0 -Or (Get-Item $file.Fullname).length -eq 0)
 }
 
 ## Check if the file is UTF-8 encoded. That is, if once read as UTF-8,
