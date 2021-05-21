@@ -1,7 +1,7 @@
 [CmdletBinding()] Param (
-  [Parameter(Mandatory = $True)]$path,
-  [Parameter(Mandatory = $False)] [switch] $showall,
-  [Parameter(Mandatory = $False)] [string[]] $filetypes
+  [Parameter(Mandatory = $True)] [string[]]$path,
+  [Parameter(Mandatory = $False)] [string[]] $filetypes,
+  [Parameter(Mandatory = $False)] [switch] $showall
 )
 
 #Defined file types to check
@@ -13,12 +13,10 @@ if ($definedfiletypes) {
 
 $allfiles = @()
 $noutf8files = @()
-$folder = Get-Item $path
-
 
 ## First, check if the file is binary. That is, if the first
 ## 5 lines contain any non-printable characters.
-## Empty files are assumed as binary, just as does UNIX file command.
+## Empty files are also assumed as binary, just as does UNIX file command.
 function Get-file-looks-binary($file) {
    $nonPrintable = [char[]] (0..8 + 10..31 + 127 + 129 + 141 + 143 + 144 + 157)
   $lines = Get-Content $file.Fullname -ErrorAction Ignore -TotalCount 5
@@ -38,8 +36,6 @@ function Get-file-looks-utf8-with-BOM($file) {
   [Byte[]]$bom = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 $file.Fullname
   return ($bom[0] -eq 0xef -and $bom[1] -eq 0xbb -and $bom[2] -eq 0xbf)
 }
-
-Write-Host "Checking file encodings in:" $path "`r`n"
 
 function Get-encodings($folder) {
   $folder.GetFiles() | ForEach-Object {
@@ -65,7 +61,12 @@ function Get-encodings($folder) {
   $folder.GetDirectories() | ForEach-Object { Get-encodings $_ }
 }
 
-Get-encodings $folder
+$path | ForEach-Object {
+  $folder = Get-Item $_
+  Write-Host "Checking file encodings in:" $folder "`r`n"
+  Get-encodings($folder)
+}
+
 if ($showall) {
   Write-Host "All files:`r`n"
   $script:allfiles
