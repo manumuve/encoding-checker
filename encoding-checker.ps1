@@ -36,7 +36,17 @@ function Get-file-looks-binary($file) {
    $nonPrintable = [char[]] (0..8 + 10..31 + 127 + 129 + 141 + 143 + 144 + 157)
   $lines = Get-Content $file.Fullname -ErrorAction Ignore -TotalCount 5
   $result = @($lines | Where-Object { $_.IndexOfAny($nonPrintable) -ge 0 })
+
+  ##[Byte[]]$head = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 $file.Fullname
+  ##Write-Host "HEAD:" $head "`r`n"
+
   return ($result.Count -gt 0 -Or (Get-Item $file.Fullname).length -eq 0)
+}
+
+## Search for '%PDF' in file header.
+function Get-file-looks-pdf($file) {
+  [Byte[]]$head = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 $file.Fullname
+  return ($head.length -gt 3 -And $head[0] -eq 0x25 -and $head[1] -eq 0x50 -and $head[2] -eq 0x44 -and $head[3] -eq 0x46)
 }
 
 ## Check if the file is UTF-8 encoded. That is, if once read as UTF-8,
@@ -49,7 +59,7 @@ function Get-file-looks-utf8($file) {
 ## Check if an UTF-8 encoded file has the BOM signature present.
 function Get-file-looks-utf8-with-BOM($file) {
   [Byte[]]$bom = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 $file.Fullname
-  return ($bom[0] -eq 0xef -and $bom[1] -eq 0xbb -and $bom[2] -eq 0xbf)
+  return ($bom.length -gt 3 -And $bom[0] -eq 0xef -and $bom[1] -eq 0xbb -and $bom[2] -eq 0xbf)
 }
 
 function Get-encodings($folder) {
@@ -57,6 +67,9 @@ function Get-encodings($folder) {
     if ($_.Fullname -match $finalregex) {
       if (Get-file-looks-binary($_)) {
         $script:allfiles += $_.Fullname + ",`t ASCII-8BIT (binary file)"
+      }
+      elseif (Get-file-looks-pdf($_)) {
+        $script:allfiles += $_.Fullname + ",`t PDF Document"
       }
       elseif (Get-file-looks-utf8($_)) {
         if (Get-file-looks-utf8-with-BOM($_)) {

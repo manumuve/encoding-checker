@@ -20,3 +20,13 @@ Fully compatible with CI/CD pipelines on any orchestrator with Windows PowerShel
 `.\encoding-checker.ps1 -path 'E:\Desarrollo\encoding-checker\test files\' -only txt,css,html`
 
 `.\encoding-checker.ps1 -path 'E:\Development\encoding-checker\test files\', 'E:\Another\path\to scan\'`
+
+## CI/CD pipeline example (Azure DevOps)
+
+Configuring the pipeline:
+
+![Script configuration in Azure DevOps pipeline](/img/Pipeline%20config.PNG)
+
+Results:
+
+![Script results in Azure DevOps pipeline](/img/Pipeline%20results.PNG)
