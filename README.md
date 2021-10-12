@@ -1,7 +1,7 @@
 # encoding-checker
 A Windows PowerShell script to detect no UTF-8 files.
 
-Fully compatible with CI/CD pipelines on any orchestrator with Windows PowerShell tasks avaiable.
+Fully compatible with CI/CD pipelines on any orchestrator with Windows PowerShell tasks available.
 
 
 ## Parameters
