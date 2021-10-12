@@ -1,15 +1,30 @@
 [CmdletBinding()] Param (
   [Parameter(Mandatory = $True)] [string[]]$path,
-  [Parameter(Mandatory = $False)] [string[]] $filetypes,
+  [Parameter(Mandatory = $False)] [string[]] $only,
+  [Parameter(Mandatory = $False)] [string[]] $exclude,
   [Parameter(Mandatory = $False)] [switch] $showall
 )
 
-#Defined file types to check
-$definedfiletypes = $PSBoundParameters.ContainsKey('filetypes')
-$filetypesregex = ""
-if ($definedfiletypes) {
-  $filetypesregex = "(\." + [string]::Join(')$|(\.', $filetypes) + ")$"
+$licensemessage = "encoding-checker script is under GNU General Public License v3.0.`r`nDocumentation and latest release: https://github.com/manumuve/encoding-checker`r`n`r`n"
+
+
+#Defined file types to check or exclude
+$definedonly = $PSBoundParameters.ContainsKey('only')
+$definedexclude = $PSBoundParameters.ContainsKey('exclude')
+$finalregex = ""
+$includeregexfragment = ""
+$excluderegexfragment = ""
+if ($definedexclude) {
+  $excluderegexfragment = "(?!.*\.(" + [string]::Join('|', $exclude) + ")$)"
 }
+if ($definedonly) {
+  $includeregexfragment = "(\.(" + [string]::Join('|', $only) + ")$)"
+}
+else {
+  $includeregexfragment = "(\.(.*)$)"
+}
+
+$finalregex = $excluderegexfragment + $includeregexfragment
 
 $allfiles = @()
 $noutf8files = @()
@@ -39,7 +54,7 @@ function Get-file-looks-utf8-with-BOM($file) {
 
 function Get-encodings($folder) {
   $folder.GetFiles() | ForEach-Object {
-    if (!$definedfiletypes -or $_.Fullname -match $filetypesregex) {
+    if ($_.Fullname -match $finalregex) {
       if (Get-file-looks-binary($_)) {
         $script:allfiles += $_.Fullname + ",`t ASCII-8BIT (binary file)"
       }
@@ -76,10 +91,11 @@ if ($showall) {
 if ([int]$script:noutf8files.count -gt 0) {
   Write-Host "No UTF-8 files:`r`n"
   $script:noutf8files
-  Write-Error -Message ("`r`n" + $script:noutf8files.count + " file/s with wrong encoding found. Please, check list above.`r`n`r`n") -ErrorAction Stop
+  Write-Error -Message ("`r`n" + $script:noutf8files.count + " file/s with wrong encoding found. Please, check list above.`r`n`r`n") -ErrorAction Continue
+  Write-Host $licensemessage
+  exit -100
 }
 else {
   Write-Host "Found no files with wrong encoding.`r`n`r`n"
+  Write-Host $licensemessage
 }
-
-Write-Host "encoding-checker script is under GNU General Public License v3.0.`r`nDocumentation and latest release: https://github.com/manumuve/encoding-checker`r`n`r`n"

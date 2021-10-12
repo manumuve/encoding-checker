@@ -7,7 +7,8 @@ Fully compatible with CI/CD pipelines on any orchestrator with Windows PowerShel
 ## Parameters
 
 * -path: path to scan. Mandatory.
-* -filetypes: If present, determines the file types to check (by extension).
+* -only: If present, determines the file types to check (by extension).
+* -exclude: If present, determines the file types to exclude from checking (by extension).
 * -showall: If present, shows the full list of scanned files.
 
 ## Usage examples
@@ -16,6 +17,6 @@ Fully compatible with CI/CD pipelines on any orchestrator with Windows PowerShel
 
 `.\encoding-checker.ps1 -path 'E:\Development\encoding-checker\test files\' -showall`
 
-`.\encoding-checker.ps1 -path 'E:\Desarrollo\encoding-checker\test files\' -filetypes txt,css,html`
+`.\encoding-checker.ps1 -path 'E:\Desarrollo\encoding-checker\test files\' -only txt,css,html`
 
 `.\encoding-checker.ps1 -path 'E:\Development\encoding-checker\test files\', 'E:\Another\path\to scan\'`
