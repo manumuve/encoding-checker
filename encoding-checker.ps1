@@ -104,11 +104,11 @@ if ($showall) {
 if ([int]$script:noutf8files.count -gt 0) {
   Write-Host "No UTF-8 files:`r`n"
   $script:noutf8files
-  Write-Error -Message ("`r`n" + $script:noutf8files.count + " file/s with wrong encoding found. Please, check list above.`r`n`r`n") -ErrorAction Continue
+  Write-Host ("`r`n" + $script:noutf8files.count + " file/s with wrong encoding found. Please, check list above.`r`n`r`n") -foregroundcolor Red
   Write-Host $licensemessage
-  exit -100
+  exit 1
 }
 else {
-  Write-Host "Found no files with wrong encoding.`r`n`r`n"
+  Write-Host "Found no files with wrong encoding.`r`n`r`n" -foregroundcolor Green
   Write-Host $licensemessage
 }
