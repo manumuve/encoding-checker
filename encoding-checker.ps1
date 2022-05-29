@@ -5,7 +5,8 @@
   [Parameter(Mandatory = $False)] [switch] $showall
 )
 
-$licensemessage = "encoding-checker script is under GNU General Public License v3.0.`r`nDocumentation and latest release: https://github.com/manumuve/encoding-checker`r`n`r`n"
+$version = 0.3
+$licensemessage = "encoding-checker v$version - This script is under GNU General Public License v3.0.`r`nDocumentation and latest release: https://github.com/manumuve/encoding-checker`r`n`r`n"
 
 
 #Defined file types to check or exclude
