@@ -34,13 +34,13 @@ $noutf8files = @()
 ## Empty files are also assumed as binary, just as does UNIX file command.
 function Get-file-looks-binary($file) {
   $nonPrintable = [char[]] (0..8 + 10..31 + 127 + 129 + 141 + 143 + 144 + 157)
- $lines = Get-Content $file.Fullname -ErrorAction Ignore -TotalCount 5
- $result = @($lines | Where-Object { $_.IndexOfAny($nonPrintable) -ge 0 })
+  $lines = Get-Content $file.Fullname -ErrorAction Ignore -TotalCount 5
+  $result = @($lines | Where-Object { $_.IndexOfAny($nonPrintable) -ge 0 })
 
- ##[Byte[]]$head = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 $file.Fullname
- ##Write-Host "HEAD:" $head "`r`n"
+  ##[Byte[]]$head = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 $file.Fullname
+  ##Write-Host "HEAD:" $head "`r`n"
 
- return ($result.Count -gt 0 -Or (Get-Item $file.Fullname).length -eq 0)
+  return ($result.Count -gt 0 -Or (Get-Item $file.Fullname).length -eq 0)
 }
 
 ## Search for '%PDF' in file header.
@@ -58,8 +58,8 @@ function Get-file-looks-utf8($file) {
 
 ## Check if an UTF-8 encoded file has the BOM signature present.
 function Get-file-looks-utf8-with-BOM($file) {
- [Byte[]]$bom = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 $file.Fullname
- return ($bom.length -gt 3 -And $bom[0] -eq 0xef -and $bom[1] -eq 0xbb -and $bom[2] -eq 0xbf)
+  [Byte[]]$bom = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 $file.Fullname
+  return ($bom.length -gt 3 -And $bom[0] -eq 0xef -and $bom[1] -eq 0xbb -and $bom[2] -eq 0xbf)
 }
 
 <#
@@ -269,30 +269,35 @@ function Get-file-looks-utf8-content-deep-method($file) {
   return $true
 }
 
+## Simply gets a timestamp to use when logging results.
+function Get-TimeStamp {
+  return "[{0:MM/dd/yy} {0:HH:mm:ss}]`t" -f (Get-Date)
+}
+
 function Get-encodings($folder) {
   $folder.GetFiles() | ForEach-Object {
     if ($_.Fullname -match $finalregex) {
       if (Get-file-looks-binary($_)) {
-        $script:allfiles += $_.Fullname + ",`t ASCII-8BIT (binary file)"
+        $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t ASCII-8BIT (binary file)"
       }
       elseif (Get-file-looks-pdf($_)) {
-        $script:allfiles += $_.Fullname + ",`t PDF Document"
+        $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t PDF Document"
       }
       elseif (Get-file-looks-utf8($_)) {
         if (Get-file-looks-utf8-with-BOM($_)) {
-          $script:allfiles += $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName + " with BOM"
+          $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName + " with BOM"
           $script:noutf8files += $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName + " with BOM"
         }
         else {
-          $script:allfiles += $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName
+          $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName
         } 
       }
       elseif (Get-file-looks-utf8-content-deep-method($_))
       {
-        $script:allfiles += $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName + "(lento)"
+        $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName + "(determined with deep method)"
       }
       else {
-        $script:allfiles += $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(20127).EncodingName + " (or unknown encoding)"
+        $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(20127).EncodingName + " (or unknown encoding)"
         $script:noutf8files += $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(20127).EncodingName + " (or unknown encoding)"
       }
     }
