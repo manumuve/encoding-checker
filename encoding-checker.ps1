@@ -7,7 +7,7 @@
     [Parameter(Mandatory = $False)] [switch] $ignorewarning
 )
 
-$version = 0.4
+$version = 0.5
 $licensemessage = "encoding-checker v$version - This script is under GNU General Public License v3.0.`r`nDocumentation and latest release: https://github.com/manumuve/encoding-checker`r`n`r`n"
 
 
@@ -276,20 +276,24 @@ function Get-encodings($folder) {
             }
             else {
                 $deepSuccess = $false
+                $exceptionwasthrown = $false
                 Try {
                     $deepSuccess = Get-file-looks-utf8-content-deep-method($_)
                 }
                 Catch [system.exception] {
-                    # Writing the exception in the console
-                     #Write-Host $_.Exception
+                    $exceptionWasThrown = $true
                 }
                 Finally {
-                    #Write-Host "Finally para " $_.Fullname "`r`n`r`n" -foregroundcolor Green
-                    if ($deepSuccess -eq $false) {
+                    if ($exceptionWasThrown -eq $true) {
+                        $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t(undetermined encoding)"
                         $script:undeterminedfiles += $(Get-TimeStamp) + $_.Fullname + ",`t(undetermined encoding)"
                     }
-                    else {
+                    elseif ($deepSuccess -eq $true) {
                         $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName
+                    }
+                    else {
+                        $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(20127).EncodingName + " (or another encoding)"
+                        $script:noutf8files += $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(20127).EncodingName + " (or another encoding)"
                     }
                 }
             }
