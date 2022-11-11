@@ -4,10 +4,11 @@
     [Parameter(Mandatory = $False)] [string[]] $exclude,
     [Parameter(Mandatory = $False)] [switch] $showall,
     [Parameter(Mandatory = $False)] [int] $timeout,
-    [Parameter(Mandatory = $False)] [switch] $ignorewarning
+    [Parameter(Mandatory = $False)] [switch] $ignorewarning,
+    [Parameter(Mandatory = $False)] [string[]] $resultspath
 )
 
-$version = 0.5
+$version = 0.6
 $licensemessage = "encoding-checker v$version - This script is under GNU General Public License v3.0.`r`nDocumentation and latest release: https://github.com/manumuve/encoding-checker`r`n`r`n"
 
 
@@ -42,6 +43,7 @@ $finalregex = $excluderegexfragment + $includeregexfragment
 $allfiles = @()
 $noutf8files = @()
 $undeterminedfiles = @()
+$results = ""
 
 ## Checks if the file is binary. That is, if the first
 ## 5 lines contain any non-printable characters.
@@ -309,27 +311,42 @@ $path | ForEach-Object {
 }
 
 if ($showall) {
-    Write-Host "All files:`r`n"
-    $script:allfiles
-    Write-Host "`r`n`r`n"
+    $allfileslist = "All files:`r`n`r`n" + ($script:allfiles -join "`r`n") + "`r`n`r`n"
+    $results = $results + $allfileslist
+    Write-Host $allfileslist
 }
 
 if ([int]$script:noutf8files.count -gt 0 -or [int]$script:undeterminedfiles.count -gt 0) {
     if ([int]$script:noutf8files.count -gt 0) {
-        Write-Host "No UTF-8 files:`r`n"
-        $script:noutf8files
-        Write-Host ("`r`n" + $script:noutf8files.count + " file/s with wrong encoding found. Please, check list above.`r`n`r`n") -foregroundcolor Red
+        $noutf8list = "No UTF-8 files:`r`n`r`n" + ($script:noutf8files -join "`r`n") + "`r`n`r`n"
+        $noutf8msg = [String]$script:noutf8files.count + " file/s with wrong encoding found. Please, check list above.`r`n`r`n"
+        $results = $results + $noutf8list + $noutf8msg
+        Write-Host $noutf8list
+        Write-Host $noutf8msg -foregroundcolor Red
     }
 
     if ([int]$script:undeterminedfiles.count -gt 0) {
-        Write-Host ("File/s with undetermined encoding:`r`n") -foregroundcolor Yellow
+        $undeterminedlist = "File/s with undetermined encoding:`r`n" + ($script:undeterminedfiles -join "`r`n") + "`r`n`r`n"
+        $undeterminedmsg = [String]$script:undeterminedfiles.count + " file/s whith undetermined encoding that must be checked manually.`r`n`r`n"
+        $results = $results + $undeterminedlist + $undeterminedmsg
+        Write-Host $undeterminedlist -foregroundcolor Yellow
         $script:undeterminedfiles
-        Write-Warning ("`r`n" + $script:undeterminedfiles.count + " file/s whith undetermined encoding that must be checked manually.`r`n`r`n") -WarningAction $script:SetWarningAction
+        Write-Warning $undeterminedmsg -WarningAction $script:SetWarningAction
     }
-    Write-Host $licensemessage
-    exit 1
 }
 else {
-    Write-Host "Found no files with wrong encoding.`r`n`r`n" -foregroundcolor Green
-    Write-Host $licensemessage
+    $allfilesokmsg = "Found no files with wrong encoding.`r`n`r`n"
+    $results = $results + $allfilesokmsg
+    Write-Host $allfilesokmsg -foregroundcolor Green
+}
+
+$results = $results + $licensemessage
+Write-Host $licensemessage
+
+if ($resultspath.Length) {
+    Set-Content $resultspath $results
+}
+
+if ([int]$script:noutf8files.count -gt 0 -or [int]$script:undeterminedfiles.count -gt 0) {
+    exit 1
 }

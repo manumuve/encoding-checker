@@ -12,6 +12,7 @@ Fully compatible with CI/CD pipelines on any orchestrator with Windows PowerShel
 * -showall: If present, shows the full list of scanned files.
 * -timeout: If present, set the timeout to deep detection method for each file to check.
 * -ignorewarning: If present, the script will continue when files with undetermined encoding are detected.
+* -resultspath: If present, the scan results are saved into the specified file.
 
 ## Usage examples
 
