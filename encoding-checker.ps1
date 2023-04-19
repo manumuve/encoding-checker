@@ -8,7 +8,7 @@
     [Parameter(Mandatory = $False)] [string[]] $resultspath
 )
 
-$version = 0.6
+$version = 0.7
 $licensemessage = "encoding-checker v$version - This script is under GNU General Public License v3.0.`r`nDocumentation and latest release: https://github.com/manumuve/encoding-checker`r`n`r`n"
 
 
