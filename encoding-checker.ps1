@@ -72,6 +72,13 @@ function Get-file-looks-utf8($file) {
     return ($f.length -gt 0 -And !$f.contains([char]0xfffd))
 }
 
+## Check if the file is UTF-16 encoded. That is, if the first two 
+## bytes are 0xFE and 0xFF for UTF-16 BE or 0xFF and 0xFE for UTF-16 LE.
+function Get-file-looks-utf16($file){
+	$c = Get-Content -Encoding Byte -TotalCount 2 $file.Fullname
+	return (($c[0] -eq 0xFE -and $c[1] -eq 0xFF) -or ($c[1] -eq 0xFE -and $c[0] -eq 0xFF))
+}
+
 ## Check if an UTF-8 encoded file has the BOM signature present.
 function Get-file-looks-utf8-with-BOM($file) {
     [Byte[]]$bom = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 $file.Fullname
@@ -272,10 +279,14 @@ function Get-encodings($folder) {
                     $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName + " with BOM"
                     $script:noutf8files += $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName + " with BOM"
                 }
+				elseif (Get-file-looks-utf16($_)){
+					$script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(1200).EncodingName + " UTF-16 encoding"
+					$script:noutf8files += $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(1200).EncodingName + " UTF-16 encoding"
+				}
                 else {
                     $script:allfiles += $(Get-TimeStamp) + $_.Fullname + ",`t " + [Text.Encoding]::GetEncoding(65001).EncodingName
                 } 
-            }
+            } 
             else {
                 $deepSuccess = $false
                 $exceptionwasthrown = $false
